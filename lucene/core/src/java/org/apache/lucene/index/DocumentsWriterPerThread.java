@@ -125,6 +125,7 @@ final class DocumentsWriterPerThread implements Accountable {
   private final InfoStream infoStream;
   private int numDocsInRAM;
   final DocumentsWriterDeleteQueue deleteQueue;
+  //DWPT从生成到flush到一个段，在这段期间其私有的DeleteSlice会记录所有的删除操作，这些删除操作会作用于(apply)DWPT添加的文档，即删除那些满足删除要求的文档
   private final DeleteSlice deleteSlice;
   private final NumberFormat nf = NumberFormat.getInstance(Locale.ROOT);
   private final AtomicLong pendingNumDocs;

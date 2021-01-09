@@ -41,6 +41,7 @@ import org.apache.lucene.util.ThreadInterruptedException;
 final class DocumentsWriterFlushControl implements Accountable, Closeable {
   private final long hardMaxBytesPerDWPT;
   private long activeBytes = 0;
+  //待写入到磁盘的索引数据量，如果全局的flush被触发，即使某个的DWPT达不到flush的要求，DWPT中的索引信息也会被累加到flushBytes中(没有触发全局flush的话，则是被累加到activeBytes中)
   private volatile long flushBytes = 0;
   private volatile int numPending = 0;
   private int numDocsSinceStalled = 0; // only with assert
@@ -529,6 +530,8 @@ final class DocumentsWriterFlushControl implements Accountable, Closeable {
       assert fullFlush == false
           : "called DWFC#markForFullFlush() while full flush is still running";
       assert fullFlushMarkDone == false : "full flush collection marker is still set to true";
+      //在临界区内就可以置fullFLush为true，表示当前线程正在执行主动flush操作，
+      // fullFLush的作用范围包括正在执行添加/更新、删除的其他线程，
       fullFlush = true;
       flushingQueue = documentsWriter.deleteQueue;
       // Set a new delete queue - all subsequent DWPT will use this queue until

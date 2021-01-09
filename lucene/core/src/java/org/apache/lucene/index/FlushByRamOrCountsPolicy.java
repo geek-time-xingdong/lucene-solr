@@ -69,6 +69,8 @@ class FlushByRamOrCountsPolicy extends FlushPolicy {
     } else if (flushOnRAM()) { // flush by RAM
       final long limit = (long) (indexWriterConfig.getRAMBufferSizeMB() * 1024.d * 1024.d);
       final long totalRam = control.activeBytes() + control.getDeleteBytesUsed();
+      //当内存中activeBytes与deleteRamByteUsed的和值达到ramBufferSizeMB，那么从DWPTP中找到一个持有DWPT，
+      // 并且该DWPT收集的索引信息量最大的ThreadState，将其置为flushPending，并且ThreadState持有的DWPT执行doFlush( )
       if (totalRam >= limit) {
         if (infoStream.isEnabled("FP")) {
           infoStream.message(

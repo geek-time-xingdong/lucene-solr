@@ -338,6 +338,7 @@ final class DocumentsWriterDeleteQueue implements Accountable, Closeable {
        * the queue. Once we update the slice we only need to assign the tail and
        * have a new slice
        */
+      // 另sliceHead、sliceTail与currentTail有相同的对象引用
       sliceHead = sliceTail = currentTail;
     }
 

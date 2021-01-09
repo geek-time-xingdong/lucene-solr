@@ -68,6 +68,12 @@ public final class StandardDirectoryReader extends DirectoryReader {
         boolean success = false;
         try {
           for (int i = sis.size() - 1; i >= 0; i--) {
+            /**
+             * 在生成StandardDirectoryReader对象期间，
+             * 会生成SegmentReader对象，该对象中的FieldsProducer信息描述了索引文件tim&&tip、索引文件doc、
+             * 索引文件pos&&pay中所有域的索引信息，而BlockTreeTermsReader作为FieldsProducer信息的成员之一，
+             * 作为索引文件tim&&tip在内存中的描述方式。
+             */
             readers[i] =
                 new SegmentReader(sis.info(i), sis.getIndexCreatedVersionMajor(), IOContext.READ);
           }

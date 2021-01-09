@@ -445,6 +445,7 @@ final class DocumentsWriter implements Closeable, Accountable {
       if (dwpt.isFlushPending() || dwpt.isAborted()) {
         dwpt.unlock();
       } else {
+        //  当ThreadState执行完添加文档的任务后，它会回到DocumentsWriterPerThreadPool中，等待下次的文档添加操作，通过一个名为freeList的链表来存储。
         perThreadPool.marksAsFreeAndUnlock(dwpt);
       }
       assert dwpt.isHeldByCurrentThread() == false : "we didn't release the dwpt even on abort";

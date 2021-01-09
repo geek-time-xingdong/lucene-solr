@@ -52,7 +52,7 @@ final class SegmentCoreReaders {
   // closed, even though it shares core objects with other
   // SegmentReaders:
   private final AtomicInteger ref = new AtomicInteger(1);
-
+  //描述了索引文件tim&&tip、索引文件doc、索引文件pos&&pay中所有域的索引信息
   final FieldsProducer fields;
   final NormsProducer normsProducer;
 

@@ -37,7 +37,9 @@ import org.apache.lucene.codecs.PointsFormat;
 import org.apache.lucene.codecs.PointsWriter;
 import org.apache.lucene.codecs.VectorFormat;
 import org.apache.lucene.codecs.VectorWriter;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.VectorField;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Sort;
@@ -649,6 +651,8 @@ final class IndexingChain implements Accountable {
     }
 
     // Add stored fields:
+    //这里如果设置了 document.add(new StoredField("id",sb.toString())); 就会走存储属性信息
+    //或者 这里将 document.add(new StringField("id", sb.toString(), Field.Store.YES)); Field.Store.YES 设置为YES
     if (fieldType.stored()) {
       if (fp == null) {
         fp = getOrAddField(fieldName, fieldType, false);
