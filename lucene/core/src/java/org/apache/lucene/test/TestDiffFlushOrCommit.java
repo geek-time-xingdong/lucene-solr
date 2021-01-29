@@ -7,6 +7,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.TopDocs;
@@ -31,10 +32,13 @@ public class TestDiffFlushOrCommit {
         indexWriter.commit();
 
         doc = new Document();
-        doc.add(new StringField("content", "bcd", Field.Store.YES));
-        doc.add(new StringField("name", "chengzheng2", Field.Store.YES));
-        indexWriter.addDocument(doc);
-        indexWriter.flush();
+        doc.add(new StringField("content", "a", Field.Store.YES));
+        doc.add(new StringField("name", "chengzheng", Field.Store.YES));
+        indexWriter.updateDocument(new Term("content","a"),doc);
+        indexWriter.commit();
+
+
+
 
         IndexReader reader = DirectoryReader.open(directory);
         IndexSearcher searcher = new IndexSearcher(reader);

@@ -159,6 +159,8 @@ public class TestSimilarity2 extends LuceneTestCase {
     iw.close();
     IndexSearcher is = newSearcher(ir);
 
+    sims.clear();
+    sims.add(new AxiomaticF1EXP());
     for (Similarity sim : sims) {
       is.setSimilarity(sim);
       BooleanQuery.Builder query = new BooleanQuery.Builder();

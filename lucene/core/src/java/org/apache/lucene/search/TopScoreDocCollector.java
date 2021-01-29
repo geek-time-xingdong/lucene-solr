@@ -18,6 +18,11 @@ package org.apache.lucene.search;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.FieldInfos;
+import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.MaxScoreAccumulator.DocAndScore;
 
@@ -43,6 +48,7 @@ public abstract class TopScoreDocCollector extends TopDocsCollector<ScoreDoc> {
       this.scorer = scorer;
     }
   }
+
 
   private static class SimpleTopScoreDocCollector extends TopScoreDocCollector {
 
@@ -74,7 +80,9 @@ public abstract class TopScoreDocCollector extends TopDocsCollector<ScoreDoc> {
           // This collector relies on the fact that scorers produce positive values:
           assert score >= 0; // NOTE: false for NaN
 
+
           totalHits++;
+
           hitsThresholdChecker.incrementHitCount();
 
           if (minScoreAcc != null && (totalHits & minScoreAcc.modInterval) == 0) {

@@ -176,8 +176,9 @@ public abstract class FunctionTestSetup extends LuceneTestCase {
             TEXT_FIELD,
             "text of doc" + scoreAndID + textLine(i),
             customType2); // for regular search
-    d.add(f);
 
+    d.add(f);
+    d.add(new StoredField(TEXT_FIELD, "text of doc" + scoreAndID + textLine(i)));
     f = new StoredField(INT_FIELD, scoreAndID); // for function scoring
     d.add(f);
     d.add(new NumericDocValuesField(INT_FIELD, scoreAndID));

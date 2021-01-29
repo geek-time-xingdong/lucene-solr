@@ -23,7 +23,11 @@ import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+
 import org.apache.lucene.expressions.Expression;
+import org.apache.lucene.expressions.SimpleBindings;
+import org.apache.lucene.search.DoubleValuesSource;
 import org.apache.lucene.util.LuceneTestCase;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -57,6 +61,9 @@ public class TestCustomFunctions extends LuceneTestCase {
   }
 
   public static double zeroArgMethod() {
+    if(new Random().nextInt(100) > 10){
+      return 10;
+    }
     return 5;
   }
 
@@ -65,7 +72,8 @@ public class TestCustomFunctions extends LuceneTestCase {
     Map<String, Method> functions = new HashMap<>();
     functions.put("foo", getClass().getMethod("zeroArgMethod"));
     Expression expr = JavascriptCompiler.compile("foo()", functions, getClass().getClassLoader());
-    assertEquals(5, expr.evaluate(null), DELTA);
+    double     evaluate = expr.evaluate(null);
+    System.out.println(evaluate);
   }
 
   public static double oneArgMethod(double arg1) {
@@ -78,6 +86,26 @@ public class TestCustomFunctions extends LuceneTestCase {
     functions.put("foo", getClass().getMethod("oneArgMethod", double.class));
     Expression expr = JavascriptCompiler.compile("foo(3)", functions, getClass().getClassLoader());
     assertEquals(6, expr.evaluate(null), DELTA);
+  }
+
+  public void testSumArgMethod() throws Exception {
+    Map<String, Method> functions = new HashMap<>();
+    functions.put("foo", getClass().getMethod("oneArgMethod", double.class));
+    functions.put("foo2", getClass().getMethod("oneArgMethod", double.class));
+    Expression expr = JavascriptCompiler.compile("foo(3)+foo2(3)", functions, getClass().getClassLoader());
+    System.out.println(expr.evaluate(null));
+  }
+
+  public void testSum2ArgMethod() throws Exception {
+    Map<String, Method> functions = new HashMap<>();
+    functions.put("foo", getClass().getMethod("oneArgMethod", double.class));
+    functions.put("foo2", getClass().getMethod("oneArgMethod", double.class));
+    Expression     expr     = JavascriptCompiler.compile("foo(popularity)+foo2(count)", functions, getClass().getClassLoader());
+    SimpleBindings bindings = new SimpleBindings();
+    bindings.add("popularity", DoubleValuesSource.constant(11));
+    bindings.add("count",DoubleValuesSource.constant(12));
+    DoubleValuesSource doubleValuesSource = expr.getDoubleValuesSource(bindings);
+
   }
 
   public static double threeArgMethod(double arg1, double arg2, double arg3) {

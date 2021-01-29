@@ -18,6 +18,9 @@
 package org.apache.lucene.queries.function;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.NumericDocValuesField;
@@ -27,16 +30,20 @@ import org.apache.lucene.expressions.js.JavascriptCompiler;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BoostQuery;
+import org.apache.lucene.search.DoubleValues;
 import org.apache.lucene.search.DoubleValuesSource;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryUtils;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
@@ -142,7 +149,7 @@ public class TestFunctionScoreQuery extends FunctionTestSetup {
     FunctionScoreQuery q =
         new FunctionScoreQuery(
             new TermQuery(new Term(TEXT_FIELD, "first")),
-            DoubleValuesSource.fromIntField(INT_FIELD));
+            DoubleValuesSource.constant(1));
 
     QueryUtils.check(random(), q, searcher, rarely());
 
@@ -194,6 +201,15 @@ public class TestFunctionScoreQuery extends FunctionTestSetup {
 
     int[] expectedDocs = new int[] {6, 1, 0, 2, 8};
     TopDocs docs = searcher.search(fq, 20);
+
+    ScoreDoc[] scoreDocs = docs.scoreDocs;
+    for (ScoreDoc scoreDoc : scoreDocs) {
+      Document doc = searcher.doc(scoreDoc.doc);
+      for (IndexableField indexableField : doc) {
+        System.out.print(indexableField.name()+":"+indexableField.stringValue()+"\t");
+      }
+      System.out.println();
+    }
     assertEquals(plain.totalHits.value, docs.totalHits.value);
     for (int i = 0; i < expectedDocs.length; i++) {
       assertEquals(expectedDocs[i], docs.scoreDocs[i].doc);

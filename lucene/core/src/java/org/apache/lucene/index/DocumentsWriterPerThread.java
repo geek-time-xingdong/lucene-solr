@@ -124,6 +124,7 @@ final class DocumentsWriterPerThread implements Accountable {
   private final FieldInfos.Builder fieldInfos;
   private final InfoStream infoStream;
   private int numDocsInRAM;
+  //这里的deleteQueue是从全局DocumentsWriter的deleteQueue传过来的引用。在flush阶段会替换全局的deleteQueue
   final DocumentsWriterDeleteQueue deleteQueue;
   //DWPT从生成到flush到一个段，在这段期间其私有的DeleteSlice会记录所有的删除操作，这些删除操作会作用于(apply)DWPT添加的文档，即删除那些满足删除要求的文档
   private final DeleteSlice deleteSlice;

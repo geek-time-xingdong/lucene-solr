@@ -17,10 +17,12 @@
 package org.apache.lucene.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.function.Supplier;
 
 public class TestPriorityQueue extends LuceneTestCase {
 
@@ -48,7 +50,7 @@ public class TestPriorityQueue extends LuceneTestCase {
   }
 
   public void testPQ() throws Exception {
-    testPQ(atLeast(10000), random());
+    testPQ(atLeast(10), random());
   }
 
   public static void testPQ(int count, Random gen) {
@@ -56,7 +58,7 @@ public class TestPriorityQueue extends LuceneTestCase {
     int sum = 0, sum2 = 0;
 
     for (int i = 0; i < count; i++) {
-      int next = gen.nextInt();
+      int next = gen.nextInt(100);
       sum += next;
       pq.add(next);
     }
@@ -67,6 +69,7 @@ public class TestPriorityQueue extends LuceneTestCase {
     //      System.out.println(" microseconds/put");
 
     //      start = new Date();
+
 
     int last = Integer.MIN_VALUE;
     for (int i = 0; i < count; i++) {
@@ -84,13 +87,84 @@ public class TestPriorityQueue extends LuceneTestCase {
   }
 
   public void testClear() {
-    PriorityQueue<Integer> pq = new IntegerQueue(3);
-    pq.add(2);
-    pq.add(3);
-    pq.add(1);
-    assertEquals(3, pq.size());
-    pq.clear();
-    assertEquals(0, pq.size());
+     class Scorer {
+
+       public int doc;
+       public float score;
+
+       public Scorer(int doc, float score) {
+         this.doc   = doc;
+         this.score = score;
+       }
+
+       @Override
+       public String toString() {
+         return "Demo{" +
+                 "doc=" + doc +
+                 ", score=" + score +
+                 '}';
+       }
+     }
+    class DemoQueue extends PriorityQueue<Scorer>{
+
+
+      public DemoQueue(int maxSize, Supplier<Scorer> sentinelObjectSupplier) {
+        super(maxSize, sentinelObjectSupplier);
+      }
+
+      @Override
+      protected boolean lessThan(Scorer a, Scorer b) {
+        return a.score < b.score;
+      }
+    }
+    int                   size = 1;
+    PriorityQueue<Scorer> pq   = new DemoQueue(size,() -> new Scorer(Integer.MAX_VALUE, Float.NEGATIVE_INFINITY));
+     //heap[1] = -9999
+    Scorer top = pq.top();
+    Scorer scorer2 = new Scorer(2, 2);
+    if(scorer2.score > top.score){
+      top.score = scorer2.score;
+      top.doc = scorer2.doc;
+      pq.updateTop();
+    }
+
+
+
+    top = pq.top();
+    Scorer scorer = new Scorer(3, 3);
+    if(scorer.score > top.score){
+      top.score = scorer.score;
+      top.doc = scorer.doc;
+      pq.updateTop();
+    }
+
+
+
+    top = pq.top();
+    Scorer scorer3 = new Scorer(-1, -1);
+    if(scorer3.score > top.score){
+      top.score = scorer3.score;
+      top.doc = scorer3.doc;
+      pq.updateTop();
+    }
+
+
+
+
+    top = pq.top();
+    Scorer scorer4 = new Scorer(1, 1);
+    if(scorer4.score > top.score){
+      top.score = scorer4.score;
+      top.doc = scorer4.doc;
+      pq.updateTop();
+    }
+
+    Scorer[] results = new Scorer[size];
+
+    for (int i = size - 1; i >= 0; i--) {
+      results[i] = pq.pop();
+    }
+    System.out.println(Arrays.toString(results));
   }
 
   public void testFixedSize() {

@@ -16,21 +16,6 @@
  */
 package org.apache.lucene.search;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.function.Supplier;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -47,6 +32,22 @@ import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.ThreadInterruptedException;
 import org.apache.lucene.util.automaton.ByteRunAutomaton;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.function.Supplier;
 
 /**
  * Implements search over a single IndexReader.
@@ -306,6 +307,9 @@ public class IndexSearcher {
    * Expert: Creates an array of leaf slices each holding a subset of the given leaves. Each {@link
    * LeafSlice} is executed in a single thread. By default, segments with more than
    * MAX_DOCS_PER_SLICE will get their own thread
+   *
+   *
+   * leaves 就是 segment的个数
    */
   protected LeafSlice[] slices(List<LeafReaderContext> leaves) {
     return slices(leaves, MAX_DOCS_PER_SLICE, MAX_SEGMENTS_PER_SLICE);
@@ -664,6 +668,7 @@ public class IndexSearcher {
       search(query, collector);
       return collectorManager.reduce(Collections.singletonList(collector));
     } else {
+      long begin = System.currentTimeMillis();
       final List<C> collectors = new ArrayList<>(leafSlices.length);
       ScoreMode scoreMode = null;
       for (int i = 0; i < leafSlices.length; ++i) {
@@ -680,8 +685,10 @@ public class IndexSearcher {
         // no segments
         scoreMode = ScoreMode.COMPLETE;
       }
+
       query = rewrite(query);
       final Weight weight = createWeight(query, scoreMode, 1);
+
       final List<FutureTask<C>> listTasks = new ArrayList<>();
       for (int i = 0; i < leafSlices.length; ++i) {
         final LeafReaderContext[] leaves = leafSlices[i].leaves;
@@ -689,6 +696,7 @@ public class IndexSearcher {
         FutureTask<C> task =
             new FutureTask<>(
                 () -> {
+                  //一个slice 可以有多个段
                   search(Arrays.asList(leaves), weight, collector);
                   return collector;
                 });
@@ -696,7 +704,11 @@ public class IndexSearcher {
         listTasks.add(task);
       }
 
+      System.out.println("search before invokeAll : "+(System.currentTimeMillis() - begin));
+
       sliceExecutor.invokeAll(listTasks);
+
+      System.out.println("search after invokeAll : "+(System.currentTimeMillis() - begin));
       final List<C> collectedCollectors = new ArrayList<>();
       for (Future<C> future : listTasks) {
         try {
@@ -707,7 +719,10 @@ public class IndexSearcher {
           throw new RuntimeException(e);
         }
       }
-      return collectorManager.reduce(collectedCollectors);
+      System.out.println("search after waiting all future : "+(System.currentTimeMillis() - begin));
+      T reduce = collectorManager.reduce(collectedCollectors);
+      System.out.println("search after reduce : "+(System.currentTimeMillis() - begin));
+      return reduce;
     }
   }
 
@@ -724,6 +739,9 @@ public class IndexSearcher {
    * @param collector to receive hits
    * @throws TooManyClauses If a query would exceed {@link IndexSearcher#getMaxClauseCount()}
    *     clauses.
+   *
+   *
+   *     leaves  代表所有的段
    */
   protected void search(List<LeafReaderContext> leaves, Weight weight, Collector collector)
       throws IOException {

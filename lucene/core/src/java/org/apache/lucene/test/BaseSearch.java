@@ -30,15 +30,15 @@ import java.util.Random;
  * @author chengzhengzheng
  * @date 2021/1/8
  */
-public class TestSearch {
-    public static void main(String[] args) throws Exception {
-//        MMapDirectory directory = new MMapDirectory(Path.of("/Users/chengzheng/lucenedir/"));
-//
-        ByteBuffersDirectory directory = new ByteBuffersDirectory();
+public class BaseSearch {
+    protected static IndexWriter       indexWriter;
+    protected static ByteBuffersDirectory directory;
+    public static void setUp() throws IOException {
+        directory  = new ByteBuffersDirectory();
         IndexWriterConfig conf        = new IndexWriterConfig();
-        IndexWriter       indexWriter = new IndexWriter(directory, conf);
+        indexWriter  = new IndexWriter(directory, conf);
 
-        for (int i = 1; i < 10000000; i++) {
+        for (int i = 1; i < 10000; i++) {
             try {
                 indexWriter.addDocument(buildRandomDocument());
             } catch (IOException e) {
@@ -46,6 +46,9 @@ public class TestSearch {
             }
         }
         indexWriter.commit();
+    }
+    public static void main(String[] args) throws Exception {
+//        MMapDirectory directory = new MMapDirectory(Path.of("/Users/chengzheng/lucenedir/"));
 
         for (int i = 0;i <100;i++){
             new Thread(new Runnable() {
@@ -63,7 +66,6 @@ public class TestSearch {
                 }
             }).start();
         }
-
 
 
 

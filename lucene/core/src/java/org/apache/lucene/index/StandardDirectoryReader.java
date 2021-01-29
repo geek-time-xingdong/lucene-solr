@@ -105,6 +105,7 @@ public final class StandardDirectoryReader extends DirectoryReader {
     // IndexWriter synchronizes externally before calling
     // us, which ensures infos will not change; so there's
     // no need to process segments in reverse order
+    //从这里可以看出 segments 的个数
     final int numSegments = infos.size();
 
     final List<SegmentReader> readers = new ArrayList<>(numSegments);

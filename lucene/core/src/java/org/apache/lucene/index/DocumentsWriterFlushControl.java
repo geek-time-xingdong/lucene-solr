@@ -40,6 +40,7 @@ import org.apache.lucene.util.ThreadInterruptedException;
  */
 final class DocumentsWriterFlushControl implements Accountable, Closeable {
   private final long hardMaxBytesPerDWPT;
+  //没有flush之前所有的索引量
   private long activeBytes = 0;
   //待写入到磁盘的索引数据量，如果全局的flush被触发，即使某个的DWPT达不到flush的要求，DWPT中的索引信息也会被累加到flushBytes中(没有触发全局flush的话，则是被累加到activeBytes中)
   private volatile long flushBytes = 0;
@@ -57,6 +58,7 @@ final class DocumentsWriterFlushControl implements Accountable, Closeable {
   // threads) to help flushing
   private final Queue<DocumentsWriterPerThread> flushQueue = new LinkedList<>();
   // only for safety reasons if a DWPT is close to the RAM limit
+  //blockedFlushes用来存放优先执行doFLush( )的DWPT
   private final Queue<DocumentsWriterPerThread> blockedFlushes = new LinkedList<>();
   // flushingWriters holds all currently flushing writers. There might be writers in this list that
   // are also in the flushQueue which means that writers in the flushingWriters list are not
@@ -546,14 +548,16 @@ final class DocumentsWriterFlushControl implements Accountable, Closeable {
         DocumentsWriterDeleteQueue newQueue =
             documentsWriter.deleteQueue.advanceQueue(perThreadPool.size());
         seqNo = documentsWriter.deleteQueue.getMaxSeqNo();
+        //这里将全局的deleteQueue替换之后、后面创建的dwpt对象指向的deleteQueue就会指向新的deleteQueue
         documentsWriter.resetDeleteQueue(newQueue);
       } finally {
         perThreadPool.unlockNewWriters();
       }
     }
     final List<DocumentsWriterPerThread> fullFlushBuffer = new ArrayList<>();
-    for (final DocumentsWriterPerThread next :
-        perThreadPool.filterAndLock(dwpt -> dwpt.deleteQueue == flushingQueue)) {
+    //如果当前的dwpt持有的是当前的deleteQueue，那么证明就是在本次flush之前生成的dwpt、因为在上面中
+    //已经将全局的deleteQueue替换成一个新的deleteQueue、注意每一个dwpt都持有一个全局的deleteQueue
+    for (final DocumentsWriterPerThread next : perThreadPool.filterAndLock(dwpt -> dwpt.deleteQueue == flushingQueue)) {
       try {
         assert next.deleteQueue == flushingQueue || next.deleteQueue == documentsWriter.deleteQueue
             : " flushingQueue: "

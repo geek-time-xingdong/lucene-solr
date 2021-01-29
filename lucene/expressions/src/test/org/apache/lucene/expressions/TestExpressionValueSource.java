@@ -17,6 +17,10 @@
 package org.apache.lucene.expressions;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.lucene.analysis.MockAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -75,8 +79,23 @@ public class TestExpressionValueSource extends LuceneTestCase {
     super.tearDown();
   }
 
+
+//  Map<String, Method> functions = new HashMap<>();
+//    functions.put("foo", getClass().getMethod("oneArgMethod", double.class));
+//    functions.put("foo2", getClass().getMethod("oneArgMethod", double.class));
+//  Expression     expr     = JavascriptCompiler.compile("foo(popularity)+foo2(count)", functions, getClass().getClassLoader());
+//  SimpleBindings bindings = new SimpleBindings();
+//    bindings.add("popularity", DoubleValuesSource.constant(11));
+//    bindings.add("count",DoubleValuesSource.constant(12));
+  public static double oneArgMethod(double arg){
+    return arg;
+  }
   public void testDoubleValuesSourceTypes() throws Exception {
-    Expression expr = JavascriptCompiler.compile("2*popularity + count");
+    Map<String, Method> functions = new HashMap<>();
+    functions.put("foo", getClass().getMethod("oneArgMethod", double.class));
+    functions.put("foo2", getClass().getMethod("oneArgMethod", double.class));
+
+    Expression expr = JavascriptCompiler.compile("foo(popularity)+foo2(count)", functions, getClass().getClassLoader());
     SimpleBindings bindings = new SimpleBindings();
     bindings.add("popularity", DoubleValuesSource.fromLongField("popularity"));
     bindings.add("count", DoubleValuesSource.fromLongField("count"));
@@ -138,9 +157,7 @@ public class TestExpressionValueSource extends LuceneTestCase {
           "f" + Integer.toString(i),
           new CachingExpressionValueSource(
               (ExpressionValueSource)
-                  JavascriptCompiler.compile(
-                          "f" + Integer.toString(i - 1) + " + f" + Integer.toString(i - 2))
-                      .getDoubleValuesSource(bindings)));
+                  JavascriptCompiler.compile("f" + Integer.toString(i - 1) + " + f" + Integer.toString(i - 2)).getDoubleValuesSource(bindings)));
     }
     DoubleValues values =
         bindings.getDoubleValuesSource("f" + Integer.toString(n)).getValues(null, null);

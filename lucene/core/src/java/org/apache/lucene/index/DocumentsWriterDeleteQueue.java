@@ -41,6 +41,7 @@ import org.apache.lucene.util.InfoStream;
  *
  * <p>Since each {@link DeleteSlice} maintains its own head and the list is only single linked the
  * garbage collector takes care of pruning the list for us. All nodes in the list that are still
+ * // 这里的pruning意思是垃圾收集器负责 可达性分析等过程、负责分析不用的node节点、因为是单链表
  * relevant should be either directly or indirectly referenced by one of the DWPT's private {@link
  * DeleteSlice} or by the global {@link BufferedUpdates} slice.
  *
