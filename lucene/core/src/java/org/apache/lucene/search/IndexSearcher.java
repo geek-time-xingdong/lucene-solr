@@ -668,7 +668,6 @@ public class IndexSearcher {
       search(query, collector);
       return collectorManager.reduce(Collections.singletonList(collector));
     } else {
-      long begin = System.currentTimeMillis();
       final List<C> collectors = new ArrayList<>(leafSlices.length);
       ScoreMode scoreMode = null;
       for (int i = 0; i < leafSlices.length; ++i) {
@@ -688,7 +687,6 @@ public class IndexSearcher {
 
       query = rewrite(query);
       final Weight weight = createWeight(query, scoreMode, 1);
-
       final List<FutureTask<C>> listTasks = new ArrayList<>();
       for (int i = 0; i < leafSlices.length; ++i) {
         final LeafReaderContext[] leaves = leafSlices[i].leaves;
@@ -704,11 +702,8 @@ public class IndexSearcher {
         listTasks.add(task);
       }
 
-      System.out.println("search before invokeAll : "+(System.currentTimeMillis() - begin));
-
       sliceExecutor.invokeAll(listTasks);
 
-      System.out.println("search after invokeAll : "+(System.currentTimeMillis() - begin));
       final List<C> collectedCollectors = new ArrayList<>();
       for (Future<C> future : listTasks) {
         try {
@@ -719,9 +714,7 @@ public class IndexSearcher {
           throw new RuntimeException(e);
         }
       }
-      System.out.println("search after waiting all future : "+(System.currentTimeMillis() - begin));
       T reduce = collectorManager.reduce(collectedCollectors);
-      System.out.println("search after reduce : "+(System.currentTimeMillis() - begin));
       return reduce;
     }
   }

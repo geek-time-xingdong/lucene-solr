@@ -16,40 +16,57 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author chengzhengzheng
  * @date 2021/1/25
  */
 public class TestCollector {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
+
+//        insertData();
+
+
+        search();
+    }
+
+    private static void insertData() {
         final List<Document> documentList = new ArrayList<>();
-        for (int i = 1; i < 1; i++) {
+        for (int j = 0; j < 299493; j++) {
             documentList.add(buildRandomDocument());
         }
         LuceneMMapDirectory.loadDoc(documentList, "M");
-        int reqAge = 25;
+        System.out.println("insert over....");
+    }
 
-
-        MatchSearchRequest matchSearchRequest = new MatchSearchRequest();
-        matchSearchRequest.setAge(reqAge);
-        matchSearchRequest.setLat(39d);
-        matchSearchRequest.setLon(116);
-        matchSearchRequest.setResultSize(60);
-        matchSearchRequest.setSex("F");
-
+    private static void search() {
         System.out.println("=========================");
-//        int count = RecommendListSearchService.count("M");
-//        System.out.println("count---->" + count);
+        int count = RecommendListSearchService.count("M");
+        System.out.println("count---->" + count);
+
+        ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(600);
         for (int i = 0; i < 1; i++) {
-            long                beginTime = System.currentTimeMillis();
-            MatchSearchResponse response  = RecommendListSearchService.collector(matchSearchRequest);
-            System.out.println("cost: " + (System.currentTimeMillis() - beginTime));
-            Set<CardCandidate> results = response.getResults();
-            for (CardCandidate result : results) {
-//                System.out.println(result);
+            while (true) {
+                int                age                = 18 + new Random().nextInt(100);
+                String[]           strings            = randomLonLat(-180, 180, -90, 90);
+                MatchSearchRequest matchSearchRequest = new MatchSearchRequest();
+                matchSearchRequest.setAge(age);
+                matchSearchRequest.setLat(Double.parseDouble(strings[0]));
+                matchSearchRequest.setLon(Double.parseDouble(strings[1]));
+                matchSearchRequest.setResultSize(60);
+                matchSearchRequest.setSex("F");
+                long                beginTime = System.currentTimeMillis();
+                MatchSearchResponse response  = RecommendListSearchService.collector(matchSearchRequest);
+                System.out.println("cost: " + (System.currentTimeMillis() - beginTime));
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
             }
         }
     }

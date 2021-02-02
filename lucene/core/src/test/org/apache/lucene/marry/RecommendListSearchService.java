@@ -34,7 +34,6 @@ public class RecommendListSearchService {
      * @return
      */
     public static MatchSearchResponse collector(MatchSearchRequest request) {
-        long beginTime = System.currentTimeMillis();
         MatchSearchResponse response = new MatchSearchResponse();
         IndexSearcher       search   = LuceneMMapDirectory.getSearcher(request.getSex() == SexEnum.MALE.getSexKey() ? SexEnum.FEMALE.getSexKey() : SexEnum.MALE.getSexKey());
         try {
@@ -42,10 +41,8 @@ public class RecommendListSearchService {
             searchContext.setLat(request.getLat());
             searchContext.setLon(request.getLon());
             searchContext.setReqAge(request.getAge());
-            System.out.println("search before collector : "+(System.currentTimeMillis() - beginTime));
             TopDocs topDocs = search.search(buildBoolQueryWithDivide(request, 0, 1), createSharedManager(searchContext, request));
             result(response, search, topDocs.scoreDocs);
-            System.out.println("search collector results : "+(System.currentTimeMillis() - beginTime));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -79,7 +76,7 @@ public class RecommendListSearchService {
         int                  maxAge              = Math.min(80, age + 5);
         BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
         booleanQueryBuilder.add(new TermQuery(new Term(RoomIndexKeyWord.RECOMMEND_AVATAR, "")), BooleanClause.Occur.MUST_NOT);
-        booleanQueryBuilder.add(LatLonPoint.newDistanceQuery(RoomIndexKeyWord.RECOMMEND_LOC, request.getLat(), request.getLon(), 500000), BooleanClause.Occur.FILTER);
+//        booleanQueryBuilder.add(LatLonPoint.newDistanceQuery(RoomIndexKeyWord.RECOMMEND_LOC, request.getLat(), request.getLon(), 500000), BooleanClause.Occur.FILTER);
         booleanQueryBuilder.add(IntPoint.newRangeQuery(RoomIndexKeyWord.RECOMMEND_AGE, minAge, maxAge), BooleanClause.Occur.FILTER);
         double step   = 1d / numThread;
         double offset = index * step;

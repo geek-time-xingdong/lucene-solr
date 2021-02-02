@@ -272,6 +272,7 @@ public abstract class Weight implements SegmentCacheable {
         Bits acceptDocs)
         throws IOException {
       if (twoPhase == null) {
+        //热点代码、  min=0.004509ms,max=4.827721ms,total=582.283351ms,count=33108
         for (int doc = iterator.nextDoc();
             doc != DocIdSetIterator.NO_MORE_DOCS;
             doc = iterator.nextDoc()) {
