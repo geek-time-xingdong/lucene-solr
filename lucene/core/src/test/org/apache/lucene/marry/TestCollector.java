@@ -28,10 +28,18 @@ public class TestCollector {
 
 
 //        insertData();
-
-
-        search();
+        LuceneMMapDirectory.loadDoc(new ArrayList<>(), "M");
+        warmUp(Runtime.getRuntime().availableProcessors());
+        search(Runtime.getRuntime().availableProcessors());
+//        warmUp(1);
     }
+
+    private static void warmUp(int times) {
+        for (int i = 0; i < times; i++) {
+            doSearch();
+        }
+    }
+
 
     private static void insertData() {
         final List<Document> documentList = new ArrayList<>();
@@ -42,33 +50,42 @@ public class TestCollector {
         System.out.println("insert over....");
     }
 
-    private static void search() {
+    private static void search(int concurrency) {
         System.out.println("=========================");
         int count = RecommendListSearchService.count("M");
         System.out.println("count---->" + count);
 
         ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(600);
-        for (int i = 0; i < 1; i++) {
-            while (true) {
-                int                age                = 18 + new Random().nextInt(100);
-                String[]           strings            = randomLonLat(-180, 180, -90, 90);
-                MatchSearchRequest matchSearchRequest = new MatchSearchRequest();
-                matchSearchRequest.setAge(age);
-                matchSearchRequest.setLat(Double.parseDouble(strings[0]));
-                matchSearchRequest.setLon(Double.parseDouble(strings[1]));
-                matchSearchRequest.setResultSize(60);
-                matchSearchRequest.setSex("F");
-                long                beginTime = System.currentTimeMillis();
-                MatchSearchResponse response  = RecommendListSearchService.collector(matchSearchRequest);
-                System.out.println("cost: " + (System.currentTimeMillis() - beginTime));
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+        for (int i = 0; i < concurrency; i++) {
+            poolExecutor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+                        long beginTime = System.currentTimeMillis();
+                        doSearch();
+                        System.out.println("cost: " + (System.currentTimeMillis() - beginTime));
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
+            });
 
-            }
         }
+    }
+
+    private static void doSearch() {
+        int                age                = 18 + new Random().nextInt(100);
+        String[]           strings            = randomLonLat(-180, 180, -90, 90);
+        MatchSearchRequest matchSearchRequest = new MatchSearchRequest();
+        matchSearchRequest.setAge(age);
+        matchSearchRequest.setLat(Double.parseDouble(strings[0]));
+        matchSearchRequest.setLon(Double.parseDouble(strings[1]));
+        matchSearchRequest.setResultSize(60);
+        matchSearchRequest.setSex("F");
+        RecommendListSearchService.collector(matchSearchRequest);
     }
 
 

@@ -38,6 +38,8 @@ import org.apache.lucene.search.MaxScoreAccumulator.DocAndScore;
  */
 public abstract class TopScoreDocCollector extends TopDocsCollector<ScoreDoc> {
 
+  private static AtomicInteger topDocs = new AtomicInteger();
+
   /** Scorable leaf collector */
   public abstract static class ScorerLeafCollector implements LeafCollector {
 
@@ -76,6 +78,9 @@ public abstract class TopScoreDocCollector extends TopDocsCollector<ScoreDoc> {
         @Override
         public void collect(int doc) throws IOException {
           float score = scorer.score();
+
+          // 测试内容  TODO
+          Document document = context.reader().document(doc);
 
           // This collector relies on the fact that scorers produce positive values:
           assert score >= 0; // NOTE: false for NaN

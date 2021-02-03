@@ -15,6 +15,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
 
@@ -44,7 +45,7 @@ public final class LuceneMMapDirectory {
     private static SearcherManager femaleManager;
 
 
-    private final static ExecutorService executorService = new ThreadPoolExecutor(200,500,5,
+    private final static ExecutorService executorService = new ThreadPoolExecutor(8,8,5,
             TimeUnit.MINUTES,new LinkedBlockingQueue<>(1000));
 
     public static File getFile(final String... names) {
@@ -66,11 +67,16 @@ public final class LuceneMMapDirectory {
         try {
             maleDir     = new MMapDirectory(getFile("_MALE").toPath());
             maleDir.setPreload(true);
+//            maleDir = new ByteBuffersDirectory();
             femaleDir     = new MMapDirectory(getFile("_FEMALE").toPath());
             maleDir.setPreload(true);
-
-            maleIW = new IndexWriter(maleDir, new IndexWriterConfig());
-            femaleIW = new IndexWriter(femaleDir, new IndexWriterConfig());
+//            femaleDir = new ByteBuffersDirectory();
+            IndexWriterConfig indexWriterConfig = new IndexWriterConfig();
+            indexWriterConfig.setUseCompoundFile(false);
+            maleIW = new IndexWriter(maleDir, indexWriterConfig);
+            IndexWriterConfig indexWriterConfig2 = new IndexWriterConfig();
+            indexWriterConfig2.setUseCompoundFile(false);
+            femaleIW = new IndexWriter(femaleDir, indexWriterConfig2);
 
             maleManager = new SearcherManager(maleIW, new SearcherFactory(){
                 @Override

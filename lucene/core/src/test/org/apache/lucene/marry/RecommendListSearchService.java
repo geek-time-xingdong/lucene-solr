@@ -3,7 +3,6 @@ package org.apache.lucene.marry;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DoublePoint;
 import org.apache.lucene.document.IntPoint;
-import org.apache.lucene.document.LatLonPoint;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -14,6 +13,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopScoreDocCollector;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -42,6 +42,8 @@ public class RecommendListSearchService {
             searchContext.setLon(request.getLon());
             searchContext.setReqAge(request.getAge());
             TopDocs topDocs = search.search(buildBoolQueryWithDivide(request, 0, 1), createSharedManager(searchContext, request));
+//            TopDocs topDocs = search.search(buildBoolQueryWithDivide(request, 0, 1),
+//                    TopScoreDocCollector.createSharedManager(request.getResultSize(), null, 600000));
             result(response, search, topDocs.scoreDocs);
         } catch (IOException e) {
             e.printStackTrace();

@@ -967,6 +967,7 @@ public class IndexWriter
       // IndexFormatTooOldException.
 
       String[] files = directory.listAll();
+      System.out.println("IndexWriter construct load all files: "+ Arrays.toString(files));
 
       // Set up our initial SegmentInfos:
       IndexCommit commit = config.getIndexCommit();
