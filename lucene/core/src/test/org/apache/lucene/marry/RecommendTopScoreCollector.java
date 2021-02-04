@@ -14,8 +14,6 @@ import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.search.TotalHits;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.lucene.marry.RecommendListSearchService.esPlaneDistance;
@@ -35,7 +33,6 @@ public abstract class RecommendTopScoreCollector extends TopDocsCollector<ScoreD
 
     private static final AtomicInteger topDocs = new AtomicInteger();
 
-    final static Map<Integer,Document> cache = new HashMap<>();
 
 //    ChronicleMap<Long, String> userMap = ChronicleMap
 //            .of(Long.class, String.class)
@@ -99,13 +96,7 @@ public abstract class RecommendTopScoreCollector extends TopDocsCollector<ScoreD
                 @Override
                 public void collect(int doc) throws IOException {
                     LeafReader reader   = context.reader();
-                    Document   document = cache.get(doc);
-                    if(document == null){
-                        //粗暴的方式、这块使用堆外缓存去缓存数据 TODO
-                        document = reader.document(doc);
-                        cache.put(doc,document);
-                    }
-
+                    Document   document = reader.document(doc);
                     float      score    = getScore(document, searchContext);
 //                    float score = scorer.score();
                     totalHits++;

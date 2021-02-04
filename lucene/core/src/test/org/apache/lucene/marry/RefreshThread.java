@@ -54,7 +54,7 @@ public class RefreshThread {
                     }
                 }
             }
-        }, 1, 1, TimeUnit.SECONDS);
+        }, 1, 1, TimeUnit.DAYS);
     }
 
 }

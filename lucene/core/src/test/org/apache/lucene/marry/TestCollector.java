@@ -83,7 +83,7 @@ public class TestCollector {
         matchSearchRequest.setAge(age);
         matchSearchRequest.setLat(Double.parseDouble(strings[0]));
         matchSearchRequest.setLon(Double.parseDouble(strings[1]));
-        matchSearchRequest.setResultSize(60);
+        matchSearchRequest.setResultSize(10);
         matchSearchRequest.setSex("F");
         RecommendListSearchService.collector(matchSearchRequest);
     }
