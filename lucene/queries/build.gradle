@@ -21,8 +21,10 @@ description = 'Filters and Queries that add to core Lucene'
 
 dependencies {
   api project(':lucene:core')
+  api project(':lucene:codecs')
 
   testImplementation project(':lucene:test-framework')
   testImplementation project(':lucene:expressions')
+
 }
 

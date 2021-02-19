@@ -84,6 +84,7 @@ final class DocumentsWriterFlushControl implements Accountable, Closeable {
 
   DocumentsWriterFlushControl(DocumentsWriter documentsWriter, LiveIndexWriterConfig config) {
     this.infoStream = config.getInfoStream();
+    //这里的 perThreadPool 是来自于 DocumentsWriter 中的
     this.perThreadPool = documentsWriter.perThreadPool;
     this.flushPolicy = config.getFlushPolicy();
     this.config = config;

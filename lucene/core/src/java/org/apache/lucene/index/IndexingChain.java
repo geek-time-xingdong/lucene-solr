@@ -546,6 +546,7 @@ final class IndexingChain implements Accountable {
     PerField newHashArray[] = new PerField[newHashSize];
 
     // Rehash
+    // 这里参考了jdk中的掩码的运算、用count-1作为掩码来使用位运算加快hash寻址 final int hashPos = fieldName.hashCode() & hashMask;
     int newHashMask = newHashSize - 1;
     for (int j = 0; j < fieldHash.length; j++) {
       PerField fp0 = fieldHash[j];
@@ -984,6 +985,7 @@ final class IndexingChain implements Accountable {
       totalFieldCount++;
 
       // At most 50% load factor:
+      //由这里可知道属性之间是通过链表链接起来的。如果totalFieldCount>=fieldHash/2那么就会重新rehash
       if (totalFieldCount >= fieldHash.length / 2) {
         rehash();
       }

@@ -147,11 +147,15 @@ final class DocumentsWriterPerThread implements Accountable {
       AtomicLong pendingNumDocs,
       boolean enableTestPoints) {
     this.directory = new TrackingDirectoryWrapper(directory);
+    //FieldInfos.Builder 对象
     this.fieldInfos = fieldInfos;
     this.indexWriterConfig = indexWriterConfig;
     this.infoStream = indexWriterConfig.getInfoStream();
+    //编解码CodeC
     this.codec = indexWriterConfig.getCodec();
+    //当前索引一共有多少文档+正在写入的文档
     this.pendingNumDocs = pendingNumDocs;
+    //这是存在 RAM 的更新
     pendingUpdates = new BufferedUpdates(segmentName);
     this.deleteQueue = Objects.requireNonNull(deleteQueue);
     assert numDocsInRAM == 0 : "num docs " + numDocsInRAM;
@@ -189,6 +193,7 @@ final class DocumentsWriterPerThread implements Accountable {
             fieldInfos,
             indexWriterConfig,
             this::onAbortingException);
+    System.out.println("#### 创建 IndexingChain 对象完成");
   }
 
   final void testPoint(String message) {

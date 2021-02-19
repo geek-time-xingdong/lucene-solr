@@ -34,6 +34,7 @@ import org.apache.lucene.util.RamUsageEstimator;
 public final class ByteBuffersDataInput extends DataInput
     implements Accountable, RandomAccessInput {
   private final ByteBuffer[] blocks;
+  //用来在读取block时候确认哪一个blockIndex
   private final int blockBits;
   private final int blockMask;
   private final long size;

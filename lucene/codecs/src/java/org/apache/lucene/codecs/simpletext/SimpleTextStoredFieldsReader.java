@@ -16,11 +16,6 @@
  */
 package org.apache.lucene.codecs.simpletext;
 
-import static org.apache.lucene.codecs.simpletext.SimpleTextStoredFieldsWriter.*;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import org.apache.lucene.codecs.StoredFieldsReader;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.FieldInfos;
@@ -41,6 +36,12 @@ import org.apache.lucene.util.CharsRefBuilder;
 import org.apache.lucene.util.IOUtils;
 import org.apache.lucene.util.RamUsageEstimator;
 import org.apache.lucene.util.StringHelper;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
+import static org.apache.lucene.codecs.simpletext.SimpleTextStoredFieldsWriter.*;
 
 /**
  * reads plaintext stored fields
@@ -101,6 +102,7 @@ public class SimpleTextStoredFieldsReader extends StoredFieldsReader {
     while (!scratch.get().equals(END)) {
       SimpleTextUtil.readLine(input, scratch);
       if (StringHelper.startsWith(scratch.get(), DOC)) {
+        //offsets 中保存fld正排索引中每一个文档的id和起始位置指针
         offsets[upto] = input.getFilePointer();
         upto++;
       }

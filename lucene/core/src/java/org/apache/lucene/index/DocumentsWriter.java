@@ -117,22 +117,25 @@ final class DocumentsWriter implements Closeable, Accountable {
     this.config = config;
     this.infoStream = config.getInfoStream();
     this.deleteQueue = new DocumentsWriterDeleteQueue(infoStream);
+    //这里创建 DocumentsWriterPerThreadPool 对象
     this.perThreadPool =
         new DocumentsWriterPerThreadPool(
             () -> {
               final FieldInfos.Builder infos = new FieldInfos.Builder(globalFieldNumberMap);
-              return new DocumentsWriterPerThread(
-                  indexCreatedVersionMajor,
-                  segmentNameSupplier.get(),
-                  directoryOrig,
-                  directory,
-                  config,
-                  deleteQueue,
-                  infos,
-                  pendingNumDocs,
-                  enableTestPoints);
+              DocumentsWriterPerThread documentsWriterPerThread = new DocumentsWriterPerThread(
+                      indexCreatedVersionMajor,
+                      segmentNameSupplier.get(),
+                      directoryOrig,
+                      directory,
+                      config,
+                      deleteQueue,
+                      infos,
+                      pendingNumDocs,
+                      enableTestPoints);
+              return documentsWriterPerThread;
             });
     this.pendingNumDocs = pendingNumDocs;
+    //这里创建 DocumentsWriterFlushControl 对象
     flushControl = new DocumentsWriterFlushControl(this, config);
     this.flushNotifications = flushNotifications;
   }

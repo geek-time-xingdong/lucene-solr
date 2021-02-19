@@ -37,10 +37,10 @@ import org.apache.lucene.util.UnicodeUtil;
 
 /** A {@link DataOutput} storing data in a list of {@link ByteBuffer}s. */
 public final class ByteBuffersDataOutput extends DataOutput implements Accountable {
-  private static final ByteBuffer EMPTY = ByteBuffer.allocate(0);
+  private static final ByteBuffer EMPTY = ByteBuffer.allocateDirect(0);
   private static final byte[] EMPTY_BYTE_ARRAY = {};
 
-  public static final IntFunction<ByteBuffer> ALLOCATE_BB_ON_HEAP = ByteBuffer::allocate;
+  public static final IntFunction<ByteBuffer> ALLOCATE_BB_ON_HEAP = ByteBuffer::allocateDirect;
 
   /** A singleton instance of "no-reuse" buffer strategy. */
   public static final Consumer<ByteBuffer> NO_REUSE =

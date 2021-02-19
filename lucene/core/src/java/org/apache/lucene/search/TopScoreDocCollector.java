@@ -79,9 +79,6 @@ public abstract class TopScoreDocCollector extends TopDocsCollector<ScoreDoc> {
         public void collect(int doc) throws IOException {
           float score = scorer.score();
 
-          // 测试内容  TODO
-          Document document = context.reader().document(doc);
-
           // This collector relies on the fact that scorers produce positive values:
           assert score >= 0; // NOTE: false for NaN
 

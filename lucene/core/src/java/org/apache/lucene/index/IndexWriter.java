@@ -967,8 +967,6 @@ public class IndexWriter
       // IndexFormatTooOldException.
 
       String[] files = directory.listAll();
-      System.out.println("IndexWriter construct load all files: "+ Arrays.toString(files));
-
       // Set up our initial SegmentInfos:
       IndexCommit commit = config.getIndexCommit();
 
@@ -1108,6 +1106,7 @@ public class IndexWriter
 
       config.getFlushPolicy().init(config);
       bufferedUpdatesStream = new BufferedUpdatesStream(infoStream);
+      //这里创建docWriter
       docWriter =
           new DocumentsWriter(
               flushNotifications,
@@ -2020,7 +2019,9 @@ public class IndexWriter
       // problems at least with ConcurrentMergeScheduler.
       changeCount.incrementAndGet();
       segmentInfos.changed();
-      return "_" + Long.toString(segmentInfos.counter++, Character.MAX_RADIX);
+      String segmentName = "_" + Long.toString(segmentInfos.counter++, Character.MAX_RADIX);
+      System.out.println("#### newSegmentName 段名称为 "+ segmentName);
+      return segmentName;
     }
   }
 

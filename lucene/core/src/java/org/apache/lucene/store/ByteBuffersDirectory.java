@@ -49,6 +49,7 @@ import org.apache.lucene.util.BitUtil;
  * @lucene.experimental
  */
 public final class ByteBuffersDirectory extends BaseDirectory {
+  //output_as_many_buffers
   public static final BiFunction<String, ByteBuffersDataOutput, IndexInput> OUTPUT_AS_MANY_BUFFERS =
       (fileName, output) -> {
         ByteBuffersDataInput dataInput = output.toDataInput();
@@ -62,6 +63,7 @@ public final class ByteBuffersDirectory extends BaseDirectory {
         return new ByteBuffersIndexInput(dataInput, inputName);
       };
 
+  //output_as_many_buffers
   public static final BiFunction<String, ByteBuffersDataOutput, IndexInput> OUTPUT_AS_ONE_BUFFER =
       (fileName, output) -> {
         ByteBuffersDataInput dataInput =
@@ -76,9 +78,11 @@ public final class ByteBuffersDirectory extends BaseDirectory {
         return new ByteBuffersIndexInput(dataInput, inputName);
       };
 
+  //output_as_byte_array
   public static final BiFunction<String, ByteBuffersDataOutput, IndexInput> OUTPUT_AS_BYTE_ARRAY =
       OUTPUT_AS_ONE_BUFFER;
 
+  //output_as_many_buffers_lucene
   public static final BiFunction<String, ByteBuffersDataOutput, IndexInput>
       OUTPUT_AS_MANY_BUFFERS_LUCENE =
           (fileName, output) -> {
