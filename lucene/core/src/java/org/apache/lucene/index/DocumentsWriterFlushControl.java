@@ -59,7 +59,7 @@ final class DocumentsWriterFlushControl implements Accountable, Closeable {
   // eligible DWPTs and
   // mark them as flushable putting them in the flushQueue ready for other threads (ie. indexing
   // threads) to help flushing
-  //存放DWPT的队列，即flush队列，在此队列中的DWPT等待执行doFlush操作
+  //存放DWPT的队列，即flush队列，在此队列中的DWPT等待执行doFlush操作   TODO 这个队列是什么时候塞入值的?
   private final Queue<DocumentsWriterPerThread> flushQueue = new LinkedList<>();
   // only for safety reasons if a DWPT is close to the RAM limit
   //blockedFlushes用来存放优先执行doFLush()的 DWPT
@@ -209,6 +209,7 @@ final class DocumentsWriterFlushControl implements Accountable, Closeable {
          * We need to differentiate here if we are pending since setFlushPending
          * moves the perThread memory to the flushBytes and we could be set to
          * pending during a delete
+         *
          */
         if (perThread.isFlushPending()) {
           flushBytes += delta;
