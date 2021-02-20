@@ -114,6 +114,7 @@ final class DocumentsWriterPerThreadPool implements Iterable<DocumentsWriterPerT
    * operation (add/updateDocument).
    */
   DocumentsWriterPerThread getAndLock() {
+    //由于可以多线程(持有相同IndexWriter 对象引用) 添加文档, 故使用synchronized 关键字从DWPTP 中获取 DWPT
     synchronized (this) {
       ensureOpen();
       // Important that we are LIFO here! This way if number of concurrent indexing threads was once
@@ -121,6 +122,11 @@ final class DocumentsWriterPerThreadPool implements Iterable<DocumentsWriterPerT
       // but has now reduced, we only use a limited number of DWPTs. This also guarantees that if we
       // have suddenly
       // a single thread indexing
+      // 从freeList尾部 取出一个DWPT对象，因为当一个DWPT完成添加文档的任务后，会重新回到DWPTP中，即添加到freeList中，所以从链表尾部获取
+      //一个DWPT 即取出最近完成添加文档任务的 DWPT，即LIFO (Last In First Out)
+      //这里为啥要取出最近完成添加文档任务的 DWPT？ 实际上是为了节省内存考虑, 因为乳沟一个DWPT 对象收集的numDocs,全局变量activeBytes分别达不到maxBufferedDocs、ramBufferSizeMB，即达不到flush
+      //的条件，那么DWPT 会重新回到 DWPTP 中, 如果新的添加文档任务到来, 从freeList中比较老的DWPT中去处理文档，那么内存中就会堆积更多的索引文档，所以优先取出最近的DWPT，目的是为了使
+      //该DWPT 尽快达到 flush的要求,释放内存，并且生成一个较大的段，BTW： 段越大，commit的时候性能更高
       final Iterator<DocumentsWriterPerThread> descendingIterator = freeList.descendingIterator();
       while (descendingIterator.hasNext()) {
         DocumentsWriterPerThread perThread = descendingIterator.next();

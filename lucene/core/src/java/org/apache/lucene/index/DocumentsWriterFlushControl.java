@@ -30,6 +30,7 @@ import org.apache.lucene.util.InfoStream;
 import org.apache.lucene.util.ThreadInterruptedException;
 
 /**
+ * 定义了DWPT 在添加、更新 文档过程中的各种行为, activeBytes、flush队列等等都是在该类中定义的，
  * This class controls {@link DocumentsWriterPerThread} flushing during indexing. It tracks the
  * memory consumption per {@link DocumentsWriterPerThread} and uses a configured {@link FlushPolicy}
  * to decide if a {@link DocumentsWriterPerThread} must flush.
@@ -40,13 +41,15 @@ import org.apache.lucene.util.ThreadInterruptedException;
  */
 final class DocumentsWriterFlushControl implements Accountable, Closeable {
   private final long hardMaxBytesPerDWPT;
-  //没有flush之前所有的索引量
+  //没有flush之前所有的索引量  多线程（持有相同的IndexWriter对象的引用）执行添加/更新操作时，每一个DWPT收集到的IndexByteUsed都会被累加到activeBytes中
   private long activeBytes = 0;
   //待写入到磁盘的索引数据量，如果全局的flush被触发，即使某个的DWPT达不到flush的要求，DWPT中的索引信息也会被累加到flushBytes中(没有触发全局flush的话，则是被累加到activeBytes中)
   private volatile long flushBytes = 0;
+  //描述了被标记为flushPending的DWPT的个数
   private volatile int numPending = 0;
   private int numDocsSinceStalled = 0; // only with assert
   private final AtomicBoolean flushDeletes = new AtomicBoolean(false);
+  //全局flush是否被触发的标志
   private boolean fullFlush = false;
   // only for assertion that we don't get stale DWPTs from the pool
   private boolean fullFlushMarkDone = false;
@@ -56,9 +59,10 @@ final class DocumentsWriterFlushControl implements Accountable, Closeable {
   // eligible DWPTs and
   // mark them as flushable putting them in the flushQueue ready for other threads (ie. indexing
   // threads) to help flushing
+  //存放DWPT的队列，即flush队列，在此队列中的DWPT等待执行doFlush操作
   private final Queue<DocumentsWriterPerThread> flushQueue = new LinkedList<>();
   // only for safety reasons if a DWPT is close to the RAM limit
-  //blockedFlushes用来存放优先执行doFLush( )的DWPT
+  //blockedFlushes用来存放优先执行doFLush()的 DWPT
   private final Queue<DocumentsWriterPerThread> blockedFlushes = new LinkedList<>();
   // flushingWriters holds all currently flushing writers. There might be writers in this list that
   // are also in the flushQueue which means that writers in the flushingWriters list are not
@@ -66,6 +70,7 @@ final class DocumentsWriterFlushControl implements Accountable, Closeable {
   // already actively flushing. They are only in the state of flushing and might be picked up in the
   // future by
   // polling the flushQueue
+  // TODO 作用是啥？ 目前猜测是 flushingWriters存放的是所有正在flush的DWPT，而flushQueue是已经被挑选出来待flush的DWPT
   private final List<DocumentsWriterPerThread> flushingWriters = new ArrayList<>();
 
   private double maxConfiguredRamBuffer = 0;
@@ -341,6 +346,8 @@ final class DocumentsWriterFlushControl implements Accountable, Closeable {
    * Sets flush pending state on the given {@link DocumentsWriterPerThread}. The {@link
    * DocumentsWriterPerThread} must have indexed at least on Document and must not be already
    * pending.
+   *
+   * 该方法用来设置一个DWPT为flushPending状态
    */
   public synchronized void setFlushPending(DocumentsWriterPerThread perThread) {
     assert !perThread.isFlushPending();

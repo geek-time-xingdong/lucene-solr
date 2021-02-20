@@ -20,6 +20,9 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.InfoStream;
 
 /**
+ * FlushPolicy 即flush策略, 准确的说应该称为 自动flush策略, 因为flush分为自动flush和主动flush,即显示的调用IndexWriter.flush()方法,
+ * flushPolicy 描述了IndexWriter执行了增删改的操作后, 将修改后的索引信息写入磁盘的时机
+ *
  * {@link FlushPolicy} controls when segments are flushed from a RAM resident internal
  * data-structure to the {@link IndexWriter}s {@link Directory}.
  *
