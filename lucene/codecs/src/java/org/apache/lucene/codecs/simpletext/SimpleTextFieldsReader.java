@@ -576,12 +576,14 @@ class SimpleTextFieldsReader extends FieldsProducer {
       long lastDocsStart = -1;
       int docFreq = 0;
       long totalTermFreq = 0;
+      //TODO 这里visitedDocs 只是为了计算docCount吗? 可能是因为maxDoc的大小不确定、用long或者int都不能很确定?
       FixedBitSet visitedDocs = new FixedBitSet(maxDoc);
       final IntsRefBuilder scratchIntsRef = new IntsRefBuilder();
       while (true) {
         SimpleTextUtil.readLine(in, scratch);
         if (scratch.get().equals(END) || StringHelper.startsWith(scratch.get(), FIELD)) {
           if (lastDocsStart != -1) {
+            //从这里可知道添加到fst中的value保存了docFreq和totalTermFreq
             fstCompiler.add(
                 Util.toIntsRef(lastTerm.get(), scratchIntsRef),
                 outputs.newPair(
@@ -617,6 +619,7 @@ class SimpleTextFieldsReader extends FieldsProducer {
           termCount++;
         }
       }
+
       docCount = visitedDocs.cardinality();
       fst = fstCompiler.compile();
       /*

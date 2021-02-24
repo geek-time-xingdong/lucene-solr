@@ -11,6 +11,7 @@ import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
 
 import java.io.IOException;
@@ -26,8 +27,14 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @date 2021/1/25
  */
 public class TestCollector {
+    final static List<String> randomText = new ArrayList<>();
     public static void main(String[] args) throws IOException, InterruptedException {
-
+        randomText.add("hello");
+        randomText.add("helc");
+        randomText.add("helb");
+        randomText.add("world");
+        randomText.add("worc");
+        randomText.add("wora");
 //        insertData();
         warmUp(Runtime.getRuntime().availableProcessors());
 //        search(Runtime.getRuntime().availableProcessors());
@@ -99,6 +106,7 @@ public class TestCollector {
             sb.append(random.nextInt(10));
         }
 
+        document.add(new TextField("content",randomText.get(new Random().nextInt(randomText.size())),Field.Store.YES));
         document.add(new StringField(RoomIndexKeyWord.RECOMMEND_ID, sb.toString(), Field.Store.YES));
 
         int age = random.nextInt(100) > 50 ? -99 : 99;

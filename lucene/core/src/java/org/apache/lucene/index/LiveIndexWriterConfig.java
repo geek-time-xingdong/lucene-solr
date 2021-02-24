@@ -97,6 +97,8 @@ public class LiveIndexWriterConfig {
   /**
    * if an indexing thread should check for pending flushes on update in order to help out on a full
    * flush
+   *
+   * 它描述了是否需要在每一次的添加/更新操作时去检查flushQueue中是否有待flush的DWPT
    */
   protected volatile boolean checkPendingFlushOnUpdate = true;
 

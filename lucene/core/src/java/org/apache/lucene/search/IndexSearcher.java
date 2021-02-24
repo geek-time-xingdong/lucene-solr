@@ -515,7 +515,7 @@ public class IndexSearcher {
   }
 
   /**
-   * Finds the top <code>n</code> hits for <code>query</code>.
+   * c <code>n</code> hits for <code>query</code>.
    *
    * @throws TooManyClauses If a query would exceed {@link IndexSearcher#getMaxClauseCount()}
    *     clauses.
@@ -533,6 +533,7 @@ public class IndexSearcher {
    *     clauses.
    */
   public void search(Query query, Collector results) throws IOException {
+    //每一种Query都需要重写（rewrite）才能使得较为友好的接口层面（api level）的Query完善成一个"最终的（final）"Query，如果这个Query已经是"最终的"，就不需要重写，这个最终的Query在源码注释中被称为primitive query。
     query = rewrite(query);
     search(leafContexts, createWeight(query, results.scoreMode(), 1), results);
   }
@@ -663,6 +664,7 @@ public class IndexSearcher {
    */
   public <C extends Collector, T> T search(Query query, CollectorManager<C, T> collectorManager)
       throws IOException {
+    //当索引多个段的时候,把对一个段的搜索作为一个任务交给线程池、这个线程池是创建indexSearch的时候提供给的线程池
     if (executor == null || leafSlices.length <= 1) {
       final C collector = collectorManager.newCollector();
       search(query, collector);

@@ -20,6 +20,8 @@ package org.apache.lucene.index;
  * Encapsulates all required internal state to position the associated {@link TermsEnum} without
  * re-seeking.
  *
+ * 封装所有 不用重新寻址来定位TermsEnum的 内部状态
+ *
  * @see TermsEnum#seekExact(org.apache.lucene.util.BytesRef, TermState)
  * @see TermsEnum#termState()
  * @lucene.experimental

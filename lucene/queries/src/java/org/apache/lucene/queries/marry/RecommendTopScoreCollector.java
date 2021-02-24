@@ -122,7 +122,7 @@ public abstract class RecommendTopScoreCollector extends TopDocsCollector<ScoreD
 
         @Override
         public ScoreMode scoreMode() {
-            return ScoreMode.TOP_DOCS;
+            return ScoreMode.COMPLETE;
         }
     }
 

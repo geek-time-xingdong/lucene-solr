@@ -39,6 +39,7 @@ public class TermQuery extends Query {
   private final TermStates perReaderTermState;
 
   final class TermWeight extends Weight {
+    //lucene 的打分规则、可以通过IndexSearcher的setSimilarity(similarity)来进行设置
     private final Similarity similarity;
     private final Similarity.SimScorer simScorer;
     private final TermStates termStates;

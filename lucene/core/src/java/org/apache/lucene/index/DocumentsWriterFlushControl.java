@@ -59,7 +59,7 @@ final class DocumentsWriterFlushControl implements Accountable, Closeable {
   // eligible DWPTs and
   // mark them as flushable putting them in the flushQueue ready for other threads (ie. indexing
   // threads) to help flushing
-  //存放DWPT的队列，即flush队列，在此队列中的DWPT等待执行doFlush操作   TODO 这个队列是什么时候塞入值的?
+  //存放DWPT的队列，即flush队列，在此队列中的DWPT等待执行doFlush操作   存放了待执行doFlush操作的DWPT集合 TODO 这个队列是什么时候塞入值的?
   private final Queue<DocumentsWriterPerThread> flushQueue = new LinkedList<>();
   // only for safety reasons if a DWPT is close to the RAM limit
   //blockedFlushes用来存放优先执行doFLush()的 DWPT
@@ -431,7 +431,9 @@ final class DocumentsWriterFlushControl implements Accountable, Closeable {
     boolean fullFlush;
     synchronized (this) {
       final DocumentsWriterPerThread poll;
+      //取出DWPT 然后更新stall
       if ((poll = flushQueue.poll()) != null) {
+        //更新stall：重新计算(activeBytes + flushBytes) > limit && activeBytes < limit，更新stall的值
         updateStallState();
         return poll;
       }
@@ -439,6 +441,9 @@ final class DocumentsWriterFlushControl implements Accountable, Closeable {
       numPending = this.numPending;
     }
     if (numPending > 0 && fullFlush == false) { // don't check if we are doing a full flush
+      //该流程点从DWPTP（DocumentsWriterPerThreadPool）中取出每一个被标记为flushPending的DWPT，执行doFlush的操作
+      //为什么要处理DWPTP中状态为flushPending的DWPT?
+      // TODO 考虑可能是多线程环境下，DWPT被添加到flushQueue中和DWPT被设置为flushPending这两个操作不是在一个事务中,目的是尽量让所有达到flush条件的DWPT执行doflush操作
       for (final DocumentsWriterPerThread next : perThreadPool) {
         if (next.isFlushPending()) {
           if (next.tryLock()) {

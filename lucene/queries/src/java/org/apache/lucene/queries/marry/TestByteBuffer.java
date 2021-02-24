@@ -8,6 +8,8 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.ByteBuffersDirectory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -15,7 +17,10 @@ import java.util.Random;
  * @date 2021/2/3
  */
 public class TestByteBuffer {
+
     public static void main(String[] args) throws IOException {
+
+
         ByteBuffersDirectory buffersDirectory = new ByteBuffersDirectory();
         IndexWriter          indexWriter      = new IndexWriter(buffersDirectory, new IndexWriterConfig());
 

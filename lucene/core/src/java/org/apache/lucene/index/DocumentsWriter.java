@@ -387,6 +387,7 @@ final class DocumentsWriter implements Closeable, Accountable {
   private boolean preUpdate() throws IOException {
     ensureOpen();
     boolean hasEvents = false;
+    //这里使用while、循环进行判断是否stall、不能使用if  由于没有事务操作，当执行到该流程点可能又存在新的待flush的DWPT
     while (flushControl.anyStalledThreads()
         || (flushControl.numQueuedFlushes() > 0 && config.checkPendingFlushOnUpdate)) {
       // Help out flushing any queued DWPTs so we can un-stall:
@@ -396,6 +397,7 @@ final class DocumentsWriter implements Closeable, Accountable {
         // Don't push the delete here since the update could fail!
         hasEvents |= doFlush(flushingDWPT);
       }
+     //由于上面 flushControl.nextPendingFlush() 执行了更新stall的操作，所以在该流程点，stall的值可能被置为了false，就不用阻塞等待，反之需要等待1秒。
       flushControl.waitIfStalled(); // block if stalled
     }
     return hasEvents;

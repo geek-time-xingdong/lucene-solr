@@ -38,7 +38,7 @@ class BytesStore extends DataOutput implements Accountable {
   private final int blockSize;
   private final int blockBits;
   private final int blockMask;
-
+  //构建FST后生成的信息都最终保存到字节数组current[ ]数组中，即生成FST的最终结果就是该数组。
   private byte[] current;
   private int nextWrite;
 

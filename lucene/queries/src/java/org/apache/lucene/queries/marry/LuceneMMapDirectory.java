@@ -73,7 +73,7 @@ public final class LuceneMMapDirectory {
 //            maleDir = new ByteBuffersDirectory();
             femaleDir     = new NIOFSDirectory(getFile("_FEMALE").toPath());
 //            femaleDir.setPreload(true);
-            femaleDir = new ByteBuffersDirectory();
+//            femaleDir = new ByteBuffersDirectory();
             IndexWriterConfig indexWriterConfig = new IndexWriterConfig();
             indexWriterConfig.setUseCompoundFile(false);
             indexWriterConfig.setCodec(new SimpleTextCodec());

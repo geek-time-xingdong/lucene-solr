@@ -16,12 +16,13 @@
  */
 package org.apache.lucene.util.fst;
 
-import java.io.IOException;
 import org.apache.lucene.store.ByteArrayDataOutput;
 import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.IntsRef;
 import org.apache.lucene.util.IntsRefBuilder;
-import org.apache.lucene.util.fst.FST.INPUT_TYPE; // javadoc
+import org.apache.lucene.util.fst.FST.INPUT_TYPE;
+
+import java.io.IOException;
 
 // TODO: could we somehow stream an FST to disk while we
 // build it?
@@ -142,6 +143,8 @@ public class FSTCompiler<T> {
    *
    * <p>Creates an FST/FSA builder with all the possible tuning and construction tweaks. Read
    * parameter documentation carefully.
+   * https://www.shenyanchao.cn/blog/2018/12/04/lucene-fst/
+   * 这个是构建FST的Builder，Builder通过泛型T，从而可以构建包含不同类型的FST
    */
   public static class Builder<T> {
 
@@ -452,6 +455,11 @@ public class FSTCompiler<T> {
    * that input is fully consumed after this method is returned (so caller is free to reuse), but
    * output is not. So if your outputs are changeable (eg {@link ByteSequenceOutputs} or {@link
    * IntSequenceOutputs}) then you cannot reuse across calls.
+   * 加入节点过程:
+   * 1)新插入input放入frontier，这里还没有加入FST
+   * 2)依据当前input, 对上次插入数据进行freezeTail操作, 放入FST内
+   * 3)构建input的转移（Arc）关系
+   * 4)解决Output冲突，重新分配output，保证路径统一(NO_OUTPUT,不执行)
    */
   public void add(IntsRef input, T output) throws IOException {
     /*
@@ -499,14 +507,16 @@ public class FSTCompiler<T> {
       frontier[pos1].inputCount++;
       // System.out.println("  incr " + pos1 + " ct=" + frontier[pos1].inputCount + " n=" +
       // frontier[pos1]);
+      //找出当前输入的input和上一次输入lastInput的公共前缀、一旦发现他们对应的字符不相同则结束  lastInput.intAt(pos1) != input.ints[pos2]
       if (pos1 >= pos1Stop || lastInput.intAt(pos1) != input.ints[pos2]) {
         break;
       }
       pos1++;
       pos2++;
     }
+    //prefixLenPlus1是计算出input和lastInput具有公共前缀的位置
     final int prefixLenPlus1 = pos1 + 1;
-
+    // 1.新插入的节点放到frontier数组，UnCompileNode表明是新插入的，以后还可能会变化，还未放入FST内。
     if (frontier.length < input.length + 1) {
       final UnCompiledNode<T>[] next = ArrayUtil.grow(frontier, input.length + 1);
       for (int idx = frontier.length; idx < next.length; idx++) {
@@ -517,9 +527,11 @@ public class FSTCompiler<T> {
 
     // minimize/compile states from previous input's
     // orphan'd suffix
+    // 2.从prefixLenPlus1, 进行freeze冰冻操作, 添加并构建最小FST
     freezeTail(prefixLenPlus1);
 
     // init tail states for current input
+    // 3.将当前input剩下的部分插入，构建arc转移（前缀是共用的，不用添加新的状态）。
     for (int idx = prefixLenPlus1; idx <= input.length; idx++) {
       frontier[idx - 1].addArc(input.ints[input.offset + idx - 1], frontier[idx]);
       frontier[idx].inputCount++;
@@ -533,6 +545,7 @@ public class FSTCompiler<T> {
 
     // push conflicting outputs forward, only as far as
     // needed
+    // 4.如果有冲突的话，重新分配output值
     for (int idx = 1; idx < prefixLenPlus1; idx++) {
       final UnCompiledNode<T> node = frontier[idx];
       final UnCompiledNode<T> parentNode = frontier[idx - 1];
@@ -543,14 +556,17 @@ public class FSTCompiler<T> {
       final T commonOutputPrefix;
       final T wordSuffix;
 
+      // 使用common方法，计算output的共同前缀
       if (lastOutput != NO_OUTPUT) {
         commonOutputPrefix = fst.outputs.common(output, lastOutput);
         assert validOutput(commonOutputPrefix);
+        // 使用subtract方法，计算重新分配的output
         wordSuffix = fst.outputs.subtract(lastOutput, commonOutputPrefix);
         assert validOutput(wordSuffix);
         parentNode.setLastOutput(input.ints[input.offset + idx - 1], commonOutputPrefix);
         node.prependOutput(wordSuffix);
       } else {
+        //如果没有OUTPUT那么就是FSA了、FST比FSA就是可以添加OUTPUT(还能输出一个关联的值)
         commonOutputPrefix = wordSuffix = NO_OUTPUT;
       }
 
@@ -635,7 +651,7 @@ public class FSTCompiler<T> {
   // NOTE: not many instances of Node or CompiledNode are in
   // memory while the FST is being built; it's only the
   // current "frontier":
-
+//Node还具有两种状态：UnCompiledNode和CompiledNode。在源码中，使用两个对象来描述这两种状态
   interface Node {
     boolean isCompiled();
   }

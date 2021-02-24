@@ -40,8 +40,8 @@ public class RecommendListSearchService {
             searchContext.setLat(request.getLat());
             searchContext.setLon(request.getLon());
             searchContext.setReqAge(request.getAge());
-//            TopDocs topDocs = search.search(buildBoolQueryWithDivide(request), createSharedManager(searchContext, request));
-            TopDocs topDocs = search.search(new MatchAllDocsQuery(), createSharedManager(searchContext, request));
+            TopDocs topDocs = search.search(buildBoolQueryWithDivide(request), createSharedManager(searchContext, request));
+//            TopDocs topDocs = search.search(new MatchAllDocsQuery(), createSharedManager(searchContext, request));
             result(response, search, topDocs.scoreDocs);
         } catch (IOException e) {
             e.printStackTrace();
@@ -75,9 +75,10 @@ public class RecommendListSearchService {
         int                  minAge              = Math.max(18, age - 5);
         int                  maxAge              = Math.min(80, age + 5);
         BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
-        booleanQueryBuilder.add(new TermQuery(new Term(RoomIndexKeyWord.RECOMMEND_AVATAR, "")), BooleanClause.Occur.MUST_NOT);
+//        booleanQueryBuilder.add(new TermQuery(new Term(RoomIndexKeyWord.RECOMMEND_AVATAR, "")), BooleanClause.Occur.MUST_NOT);
 //        booleanQueryBuilder.add(LatLonPoint.newDistanceQuery(RoomIndexKeyWord.RECOMMEND_LOC, request.getLat(), request.getLon(), 500000), BooleanClause.Occur.FILTER);
         booleanQueryBuilder.add(IntPoint.newRangeQuery(RoomIndexKeyWord.RECOMMEND_AGE, minAge, maxAge), BooleanClause.Occur.FILTER);
+        booleanQueryBuilder.add(new TermQuery(new Term("content","hello")), BooleanClause.Occur.MUST);
         booleanQueryBuilder.add(DoublePoint.newRangeQuery(RoomIndexKeyWord.RECOMMEND_FACE_SCORE, 0, 1), BooleanClause.Occur.FILTER);
         return booleanQueryBuilder.build();
     }
