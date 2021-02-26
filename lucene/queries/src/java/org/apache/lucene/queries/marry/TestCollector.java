@@ -1,11 +1,9 @@
 package org.apache.lucene.queries.marry;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.DoubleDocValuesField;
 import org.apache.lucene.document.DoublePoint;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.IntPoint;
-import org.apache.lucene.document.LatLonDocValuesField;
 import org.apache.lucene.document.LatLonPoint;
 import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.SortedDocValuesField;
@@ -28,14 +26,21 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 public class TestCollector {
     final static List<String> randomText = new ArrayList<>();
+    final static List<Integer> randomAge = new ArrayList<>();
     public static void main(String[] args) throws IOException, InterruptedException {
-        randomText.add("hello");
-        randomText.add("helc");
-        randomText.add("helb");
-        randomText.add("world");
-        randomText.add("worc");
-        randomText.add("wora");
-//        insertData();
+        randomText.add("hell1");
+        randomText.add("hell2");
+        randomText.add("hell3");
+        randomText.add("hell4");
+        randomText.add("hell5");
+
+        randomAge.add(5);
+        randomAge.add(4);
+        randomAge.add(3);
+        randomAge.add(2);
+        randomAge.add(1);
+
+        insertData();
         warmUp(Runtime.getRuntime().availableProcessors());
 //        search(Runtime.getRuntime().availableProcessors());
     }
@@ -50,7 +55,13 @@ public class TestCollector {
     private static void insertData() {
         final List<Document> documentList = new ArrayList<>();
         for (int j = 0; j < 100; j++) {
-            documentList.add(buildRandomDocument());
+//            Document document = buildRandomDocument();
+            Document document = new Document();
+            String content = randomText.get(j / 20);
+//            document.add(new TextField("content",content,Field.Store.YES));
+            document.add(new IntPoint("age",randomAge.get(j/20)));
+            document.add(new StoredField("age",randomAge.get(j/20)));
+            documentList.add(document);
         }
         LuceneMMapDirectory.loadDoc(documentList, "M");
         System.out.println("insert over....");
@@ -106,7 +117,8 @@ public class TestCollector {
             sb.append(random.nextInt(10));
         }
 
-        document.add(new TextField("content",randomText.get(new Random().nextInt(randomText.size())),Field.Store.YES));
+
+
         document.add(new StringField(RoomIndexKeyWord.RECOMMEND_ID, sb.toString(), Field.Store.YES));
 
         int age = random.nextInt(100) > 50 ? -99 : 99;

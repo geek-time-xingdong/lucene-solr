@@ -753,9 +753,11 @@ public class IndexSearcher {
         // continue with the following leaf
         continue;
       }
+      //这里开始复杂的创建BulkScorer 操作 TODO
       BulkScorer scorer = weight.bulkScorer(ctx);
       if (scorer != null) {
         try {
+
           scorer.score(leafCollector, ctx.reader().getLiveDocs());
         } catch (CollectionTerminatedException e) {
           // collection was terminated prematurely

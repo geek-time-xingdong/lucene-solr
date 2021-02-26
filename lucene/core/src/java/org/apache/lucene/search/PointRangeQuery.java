@@ -378,6 +378,7 @@ public abstract class PointRangeQuery extends Query {
                 final FixedBitSet result = new FixedBitSet(reader.maxDoc());
                 result.set(0, reader.maxDoc());
                 int[] cost = new int[] {reader.maxDoc()};
+                //这里会根据查询条件、然后生成一个bitset、取交集操作
                 values.intersect(getInverseIntersectVisitor(result, cost));
                 final DocIdSetIterator iterator = new BitSetIterator(result, cost[0]);
                 return new ConstantScoreScorer(weight, score(), scoreMode, iterator);

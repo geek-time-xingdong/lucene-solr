@@ -64,6 +64,7 @@ public final class FixedBitSet extends BitSet implements Bits, Accountable {
   public static int bits2words(int numBits) {
     // I.e.: get the word-offset of the last bit and add one (make sure to use >> so 0
     // returns 0!)
+    //这里为啥用 >> 6 是因为long类型的最大比特位为64位、也就是 2^6 次方
     return ((numBits - 1) >> 6) + 1;
   }
 
@@ -202,6 +203,10 @@ public final class FixedBitSet extends BitSet implements Bits, Accountable {
     return val;
   }
 
+  /**
+   * 看此方法参考set方法一起看、就理解了、就是位运算
+   * @param index
+   */
   @Override
   public void clear(int index) {
     assert index >= 0 && index < numBits : "index=" + index + ", numBits=" + numBits;
@@ -227,6 +232,7 @@ public final class FixedBitSet extends BitSet implements Bits, Accountable {
     long word = bits[i] >> index; // skip all the bits to the right of index
 
     if (word != 0) {
+      //word 类型的bit码流中从右边开始算起一共多少个0
       return index + Long.numberOfTrailingZeros(word);
     }
 

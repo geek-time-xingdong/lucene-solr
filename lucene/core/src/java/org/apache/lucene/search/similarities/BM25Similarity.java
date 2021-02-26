@@ -182,12 +182,14 @@ public class BM25Similarity extends Similarity {
   @Override
   public final SimScorer scorer(
       float boost, CollectionStatistics collectionStats, TermStatistics... termStats) {
+    //idf即逆文档频率因子
     Explanation idf =
         termStats.length == 1
             ? idfExplain(collectionStats, termStats[0])
             : idfExplain(collectionStats, termStats);
+    //描述的是平均每篇文档（一个段中的文档）的长度
     float avgdl = avgFieldLength(collectionStats);
-
+    //数组中的元素会作为BM25Similarity打分公式中的一个参数K,cache这个数组是在生成Weight时生成的
     float[] cache = new float[256];
     for (int i = 0; i < cache.length; i++) {
       cache[i] = 1f / (k1 * ((1 - b) + b * LENGTH_TABLE[i] / avgdl));

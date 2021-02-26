@@ -76,11 +76,11 @@ public final class LuceneMMapDirectory {
 //            femaleDir = new ByteBuffersDirectory();
             IndexWriterConfig indexWriterConfig = new IndexWriterConfig();
             indexWriterConfig.setUseCompoundFile(false);
-            indexWriterConfig.setCodec(new SimpleTextCodec());
+//            indexWriterConfig.setCodec(new SimpleTextCodec());
             maleIW = new IndexWriter(maleDir, indexWriterConfig);
             IndexWriterConfig indexWriterConfig2 = new IndexWriterConfig();
             indexWriterConfig2.setUseCompoundFile(false);
-            indexWriterConfig.setCodec(new SimpleTextCodec());
+//            indexWriterConfig.setCodec(new SimpleTextCodec());
             femaleIW = new IndexWriter(femaleDir, indexWriterConfig2);
 
             maleManager   = new SearcherManager(maleIW, new SearcherFactory() {

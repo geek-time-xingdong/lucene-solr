@@ -70,6 +70,7 @@ class SimpleTextPointsReader extends PointsReader {
             readState.segmentInfo.name,
             readState.segmentSuffix,
             SimpleTextPointsFormat.POINT_INDEX_EXTENSION);
+    //这里用来解析dii文件
     try (ChecksumIndexInput in =
         readState.directory.openChecksumInput(indexFileName, IOContext.DEFAULT)) {
       readLine(in);
@@ -171,6 +172,7 @@ class SimpleTextPointsReader extends PointsReader {
       System.arraycopy(br.bytes, br.offset, splitPackedValues, address, bytesPerDim);
     }
 
+    //这里构建 SimpleTextBKDReader
     return new SimpleTextBKDReader(
         dataIn,
         numDataDims,

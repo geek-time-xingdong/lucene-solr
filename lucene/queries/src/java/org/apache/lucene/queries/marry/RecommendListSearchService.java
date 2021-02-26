@@ -42,7 +42,7 @@ public class RecommendListSearchService {
             searchContext.setReqAge(request.getAge());
             TopDocs topDocs = search.search(buildBoolQueryWithDivide(request), createSharedManager(searchContext, request));
 //            TopDocs topDocs = search.search(new MatchAllDocsQuery(), createSharedManager(searchContext, request));
-            result(response, search, topDocs.scoreDocs);
+//            result(response, search, topDocs.scoreDocs);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -77,9 +77,10 @@ public class RecommendListSearchService {
         BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
 //        booleanQueryBuilder.add(new TermQuery(new Term(RoomIndexKeyWord.RECOMMEND_AVATAR, "")), BooleanClause.Occur.MUST_NOT);
 //        booleanQueryBuilder.add(LatLonPoint.newDistanceQuery(RoomIndexKeyWord.RECOMMEND_LOC, request.getLat(), request.getLon(), 500000), BooleanClause.Occur.FILTER);
-        booleanQueryBuilder.add(IntPoint.newRangeQuery(RoomIndexKeyWord.RECOMMEND_AGE, minAge, maxAge), BooleanClause.Occur.FILTER);
-        booleanQueryBuilder.add(new TermQuery(new Term("content","hello")), BooleanClause.Occur.MUST);
-        booleanQueryBuilder.add(DoublePoint.newRangeQuery(RoomIndexKeyWord.RECOMMEND_FACE_SCORE, 0, 1), BooleanClause.Occur.FILTER);
+//        booleanQueryBuilder.add(IntPoint.newRangeQuery(RoomIndexKeyWord.RECOMMEND_AGE, minAge, maxAge), BooleanClause.Occur.FILTER);
+        booleanQueryBuilder.add(IntPoint.newRangeQuery("age", 2, 2), BooleanClause.Occur.FILTER);
+//        booleanQueryBuilder.add(new TermQuery(new Term("content","hell1")), BooleanClause.Occur.MUST);
+//        booleanQueryBuilder.add(DoublePoint.newRangeQuery(RoomIndexKeyWord.RECOMMEND_FACE_SCORE, 0, 1), BooleanClause.Occur.FILTER);
         return booleanQueryBuilder.build();
     }
 
@@ -122,7 +123,7 @@ public class RecommendListSearchService {
         String age    = doc.get(RoomIndexKeyWord.RECOMMEND_AGE);
 
         CardCandidate cardCandidate = new CardCandidate();
-        cardCandidate.setAge(Integer.parseInt(age));
+        cardCandidate.setAge(Integer. parseInt(age));
         cardCandidate.setFaceScore(Double.parseDouble(faceScore));
         cardCandidate.setMomoid(id);
         cardCandidate.setLastOnlineTime(Long.parseLong(lastOnlineTime));

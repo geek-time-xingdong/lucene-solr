@@ -16,12 +16,6 @@
  */
 package org.apache.lucene.codecs.simpletext;
 
-import static org.apache.lucene.codecs.simpletext.SimpleTextPointsWriter.BLOCK_COUNT;
-import static org.apache.lucene.codecs.simpletext.SimpleTextPointsWriter.BLOCK_DOC_ID;
-import static org.apache.lucene.codecs.simpletext.SimpleTextPointsWriter.BLOCK_VALUE;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.PointValues;
 import org.apache.lucene.store.IndexInput;
@@ -31,6 +25,11 @@ import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.RamUsageEstimator;
 import org.apache.lucene.util.StringHelper;
 import org.apache.lucene.util.bkd.BKDReader;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import static org.apache.lucene.codecs.simpletext.SimpleTextPointsWriter.*;
 
 /** Forked from {@link BKDReader} and simplified/specialized for SimpleText's usage */
 final class SimpleTextBKDReader extends PointValues implements Accountable {
@@ -248,6 +247,14 @@ final class SimpleTextBKDReader extends PointValues implements Accountable {
     }
   }
 
+  /**
+   * 这里是求交集操作
+   * @param state
+   * @param nodeID
+   * @param cellMinPacked
+   * @param cellMaxPacked
+   * @throws IOException
+   */
   private void intersect(
       IntersectState state, int nodeID, byte[] cellMinPacked, byte[] cellMaxPacked)
       throws IOException {
@@ -282,9 +289,11 @@ final class SimpleTextBKDReader extends PointValues implements Accountable {
       // In the unbalanced case it's possible the left most node only has one child:
       if (leafID < leafBlockFPs.length) {
         // Leaf node; scan and filter all points in this block:
+        //这里会从.dim文件中读取所有的docId
         int count = readDocIDs(state.in, leafBlockFPs[leafID], state.scratchDocIDs);
 
         // Again, this time reading values and checking with the visitor
+        //这里会根据 state.visitor PointRangeQuery查询条件生成bitSet
         visitDocValues(
             state.commonPrefixLengths,
             state.scratchPackedValue,
